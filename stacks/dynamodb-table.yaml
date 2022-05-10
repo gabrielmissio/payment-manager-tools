@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS CloudFormation Template to payment-manager dynamodb table
+
+Parameters:
+  StageName:
+    Description: The stage of the stack
+    Default: dev
+    Type: String
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9\-]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  ReadCapacityUnits:
+    Description: Provisioned read throughput
+    Type: Number
+    Default: 5
+    MinValue: 5
+    MaxValue: 10000
+    ConstraintDescription: must be between 5 and 10000
+  WriteCapacityUnits:
+    Description: Provisioned write throughput
+    Type: Number
+    Default: 5
+    MinValue: 5
+    MaxValue: 10000
+    ConstraintDescription: must be between 5 and 10000
+
+Resources:
+  PaymentManagerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub payment-manager-${StageName}
+      KeySchema:
+      - AttributeName: PK
+        KeyType: HASH
+      - AttributeName: SK
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: !Ref 'ReadCapacityUnits'
+        WriteCapacityUnits: !Ref 'WriteCapacityUnits'
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      GlobalSecondaryIndexes:
+      - IndexName: sk-index
+        KeySchema:
+          - AttributeName: SK
+            KeyType: HASH
+          - AttributeName: PK
+            KeyType: RANGE
+        Projection:
+          ProjectionType: 'ALL'
+        ProvisionedThroughput:
+          ReadCapacityUnits: !Ref 'ReadCapacityUnits'
+          WriteCapacityUnits: !Ref 'WriteCapacityUnits'
+
+  DynamoTableParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join
+        - '/'
+        - - ''
+          - 'payment-manager'
+          - !Ref StageName
+          - 'dynamodb'
+          - 'paymanet-manager-table'
+          - 'name'
+      Type: String
+      Value: !Ref PaymentManagerTable
+
+  DynamoTableParameterArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join
+        - '/'
+        - - ''
+          - 'payment-manager'
+          - !Ref StageName
+          - 'dynamodb'
+          - 'paymanet-manager-table'
+          - 'arn'
+      Type: String
+      Value: !GetAtt 'PaymentManagerTable.Arn'
+
+Outputs:
+  TableName:
+    Value: !Ref 'PaymentManagerTable'
+    Description: Table name of the newly created DynamoDB table

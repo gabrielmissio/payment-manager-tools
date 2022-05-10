@@ -1,6 +1,12 @@
 # payment-manager-tools
 
-## deploy user pool and user pool client
+## deploy DynamoDB table
+
+```bash
+aws --region <REGION> cloudformation create-stack --stack-name payment-manager-table-<STAGE> --template-body file://stacks/dynamodb-table.yaml --parameters ParameterKey=StageName,ParameterValue=<STAGE>
+```
+
+## deploy Cognito user pool and user pool client
 
 ```bash
 aws --region <REGION> cloudformation create-stack --stack-name payment-manager-user-pool-<STAGE> --template-body file://stacks/cognito-user-pool.yaml --parameters ParameterKey=StageName,ParameterValue=<STAGE>
