@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  StageName:
+    Description: The stage of the stack
+    Default: dev
+    Type: String
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9\-]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub payment-manager-user-pool-${StageName}
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+          - Name: verified_phone_number
+            Priority: 2
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+        InviteMessageTemplate: 
+          EmailMessage: 'Seu usuario: {username} e, sua senha temporaria: {####}'
+          EmailSubject: 'Senha temporaria'
+      EmailVerificationSubject: 'Seu Codigo de verificacao'
+      EmailVerificationMessage: 'Seu codigo de verificacao: {####}.'
+      MfaConfiguration: 'OFF'
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+          TemporaryPasswordValidityDays: 7
+      AliasAttributes:
+        - preferred_username
+      UsernameConfiguration:
+        CaseSensitive: false
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: WebClient
+      UserPoolId: !Ref UserPool
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+      SupportedIdentityProviders:
+        - COGNITO
+      RefreshTokenValidity: 30
+      IdTokenValidity: 1440
+      AccessTokenValidity: 1440
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      PreventUserExistenceErrors: ENABLED
+
+  userPoolArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join
+        - '/'
+        - - ''
+          - 'payment-manager'
+          - !Ref StageName
+          - 'cognito'
+          - 'user-pool'
+          - 'arn'
+      Type: String
+      Value: !GetAtt UserPool.Arn
+
+  userPoolId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join
+        - '/'
+        - - ''
+          - 'payment-manager'
+          - !Ref StageName
+          - 'cognito'
+          - 'user-pool'
+          - 'id'
+      Type: String
+      Value: !Ref UserPool
+      
+  userPoolClientIdParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join
+        - '/'
+        - - ''
+          - 'payment-manager'
+          - !Ref StageName
+          - 'cognito'
+          - 'user-pool-client'
+          - 'id'
+      Type: String
+      Value: !Ref UserPoolClient
+
+Outputs:
+  CognitoUserPoolArn:
+    Value: !GetAtt UserPool.Arn
+    Description: UserPool ARN
+  CognitoUserPoolId:
+      Value: !Ref UserPool
+      Description: UserPool Id
+  CognitoUserPoolClientId:
+    Value: !Ref UserPool
+    Description: UserPoolClient Id
+  
