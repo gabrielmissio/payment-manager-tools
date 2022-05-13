@@ -12,7 +12,7 @@ Parameters:
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
 
 Resources:
-  EnrollMentStatusTopic:
+  EnrollmentStatusTopic:
     Type: AWS::SNS::Topic
     Properties: 
       DisplayName: status da matricula
@@ -30,4 +30,4 @@ Resources:
           - 'enrollment-status'
           - 'arn'
       Type: String
-      Value: !Ref EnrollMentStatusTopic
+      Value: !Ref EnrollmentStatusTopic
