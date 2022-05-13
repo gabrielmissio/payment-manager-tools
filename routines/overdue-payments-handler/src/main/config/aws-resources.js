@@ -2,6 +2,8 @@ const AWS = require('aws-sdk');
 
 const { REGION, DYNAMODB_ENDPOINT } = require('./env');
 
+const SNS = new AWS.SNS({ apiVersion: '2010-03-31' });
+
 const DYNAMODB = new AWS.DynamoDB({
   endpoint: DYNAMODB_ENDPOINT,
   region: REGION
@@ -14,6 +16,7 @@ const DYNAMODB_DOCUMENT_CLIENT = new AWS.DynamoDB.DocumentClient({
 });
 
 module.exports = {
+  SNS,
   DYNAMODB,
   DYNAMODB_DOCUMENT_CLIENT
 };
