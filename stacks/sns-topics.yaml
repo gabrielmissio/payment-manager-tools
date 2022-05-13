@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS CloudFormation Template to payment-manager dynamodb table
+
+Parameters:
+  StageName:
+    Description: The stage of the stack
+    Default: dev
+    Type: String
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9\-]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
+Resources:
+  EnrollMentStatusTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      DisplayName: status da matricula
+      TopicName: !Sub enrollment-status-${StageName}
+
+  EnrollmentStatusTopicArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join
+        - '/'
+        - - ''
+          - 'payment-manager'
+          - !Ref StageName
+          - 'topics'
+          - 'enrollment-status'
+          - 'arn'
+      Type: String
+      Value: !Ref EnrollMentStatusTopic

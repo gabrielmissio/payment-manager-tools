@@ -17,3 +17,9 @@ aws --region <REGION> cloudformation create-stack --stack-name payment-manager-u
 ```bash
 aws cognito-idp admin-create-user --user-pool-id <USER_POOL_ID> --username <USERNAME> --user-attributes "Name"="email_verified","Value"="true" "Name"="email","Value"="yourv@mail.com"
 ```
+
+## deploy SNS topics
+
+```bash
+aws --region us-east-1 cloudformation create-stack --stack-name payment-manager-topics-dev --template-body file://stacks/sns-topics.yaml --parameters ParameterKey=StageName,ParameterValue=dev
+```
