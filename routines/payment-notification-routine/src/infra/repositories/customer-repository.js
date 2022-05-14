@@ -1,6 +1,7 @@
 const { DYNAMODB_DOCUMENT_CLIENT } = require('../../main/config/aws-resources');
 const { PAYMENT_MANAGER_TABLE_NAME } = require('../../main/config/env');
 const { MissingParamError } = require('../../utils/errors');
+const { DynamodbHelper } = require('../helpers');
 const { CustomerAdapter } = require('../adapters');
 
 const getCustomersByStatus = async (status) => {
@@ -19,6 +20,23 @@ const getCustomersByStatus = async (status) => {
   return CustomerAdapter.outputMany(data);
 };
 
+const updateCustomerById = async (payload) => {
+  if (!payload) throw new MissingParamError('payload');
+  const { PK, SK, ...profile } = CustomerAdapter.inputOne(payload);
+
+  const parametros = {
+    TableName: PAYMENT_MANAGER_TABLE_NAME,
+    Key: { PK, SK: 'PROFILE' },
+    ReturnValues: 'ALL_NEW'
+  };
+
+  Object.assign(parametros, DynamodbHelper.makeDynamicUpdateParams(profile));
+  const data = await DYNAMODB_DOCUMENT_CLIENT.update(parametros).promise();
+
+  return CustomerAdapter.outputOne(data);
+};
+
 module.exports = {
-  getCustomersByStatus
+  getCustomersByStatus,
+  updateCustomerById
 };

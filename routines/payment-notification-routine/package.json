@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrations-start": "node src/infra/migrations/create-payment-manager.js start",
     "migrations-undo": "node src/infra/migrations/create-payment-manager.js undo",
-    "seeders-start": "node src/infra/seeders/demo-payment-manager.js start"
+    "seeders-start": "node src/infra/seeders/demo-payment-manager.js start",
+    "seeders-undo": "node src/infra/seeders/demo-payment-manager.js undo"
   },
   "author": "Missio",
   "license": "SEE LICENSE IN LICENSE",

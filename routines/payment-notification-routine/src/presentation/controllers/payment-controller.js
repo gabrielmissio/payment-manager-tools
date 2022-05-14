@@ -1,9 +1,9 @@
 const { ResponseHelper } = require('../helpers');
 const { PaymentService } = require('../../domain/services');
 
-const overduePaymentHandler = async () => {
+const paymentNotificationsHandler = async () => {
   try {
-    const response = await PaymentService.overduePaymentHandler();
+    const response = await PaymentService.paymentNotificationsHandler();
 
     return ResponseHelper.ok(response);
   } catch (error) {
@@ -13,5 +13,5 @@ const overduePaymentHandler = async () => {
 };
 
 module.exports = {
-  overduePaymentHandler
+  paymentNotificationsHandler
 };
