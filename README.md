@@ -7,7 +7,7 @@
 
 
 
-This repository is used to deal with the system routines and for configuring the  cloud computing services used.
+This repository is used to deal with the system routines and for configuring the  cloud computing services.
 
 
 
