@@ -1,4 +1,3 @@
-
 <h1 align="center">PAYMENT-MANAGER-TOOLS</h1>
 
 
@@ -8,7 +7,6 @@
 
 
 This repository is used to deal with the system routines and for configuring the  cloud computing services.
-
 
 
 
@@ -29,7 +27,17 @@ This repository is used to deal with the system routines and for configuring the
 
 
 
+
+## Related Repositories  
+
+ - [PAYMENT-MANEGER-CORE_API](https://github.com/gabrielmissio/payment-manager-core-api)
+ - [PAYMENT-MANEGER-AUTH_API](https://github.com/gabrielmissio/payment-manager-auth-api) 
+
+
+
+
 ## Project anatomy
+
 
 
 
@@ -47,7 +55,9 @@ stacks                            → Application stacks
 
 
 
+
 ## License
+
 
 
 
