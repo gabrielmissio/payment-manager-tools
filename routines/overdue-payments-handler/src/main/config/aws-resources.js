@@ -2,7 +2,10 @@ const AWS = require('aws-sdk');
 
 const { REGION, DYNAMODB_ENDPOINT } = require('./env');
 
-const SNS = new AWS.SNS({ apiVersion: '2010-03-31' });
+const SNS = new AWS.SNS({
+  apiVersion: '2010-03-31',
+  region: REGION
+});
 
 const DYNAMODB = new AWS.DynamoDB({
   endpoint: DYNAMODB_ENDPOINT,
