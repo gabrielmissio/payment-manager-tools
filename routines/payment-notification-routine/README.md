@@ -33,7 +33,7 @@ This routine deals with the sending payment notifications (alerts of late paymen
 
 
 ```
-payment-notification-routine
+app
  └ node_modules (generated)         → NPM dependencies
  └ src                              → Application sources 
     └ domain                           → Application services layer
