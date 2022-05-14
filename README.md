@@ -18,6 +18,7 @@ This repository is used to deal with the system routines and for configuring the
 
  - [Nodejs (v 14.17)](https://nodejs.org/en/)
  - [npm](https://www.npmjs.com/)
+ - [AWS Cloud​Formation](https://aws.amazon.com/cloudformation/)
  - [Serverless Framework](https://www.serverless.com/)
  - [DynamoDB](https://aws.amazon.com/dynamodb)
  - [AWS lambda](https://aws.amazon.com/lambda)
