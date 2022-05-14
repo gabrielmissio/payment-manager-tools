@@ -12,7 +12,7 @@ This repository is used to deal with the system routines and for configuring the
 
 
 
-## Stack
+## Technologies
 
 
 
