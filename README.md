@@ -35,8 +35,8 @@ This repository is used to deal with the system routines and for configuring the
 ```
 routines                          → Application routines
   └ payment-notification-routine     → Payment notification routine
-  └ ...                              → Other files 
-  └ README                           → Routine deployment instructions
+    └ ...                              → Other files 
+    └ README                           → Routine deployment instructions
 stacks                            → Application stacks
   └ cognito-user-pool                → Cognito user pool stack
   └ dynamodb-table                   → DyanamoDB table stack
