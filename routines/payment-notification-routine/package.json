@@ -1,0 +1,26 @@
+{
+  "name": "overdue-payments-handler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrations-start": "node src/infra/migrations/create-payment-manager.js start",
+    "migrations-undo": "node src/infra/migrations/create-payment-manager.js undo",
+    "seeders-start": "node src/infra/seeders/demo-payment-manager.js start",
+    "seeders-undo": "node src/infra/seeders/demo-payment-manager.js undo"
+  },
+  "author": "Missio",
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.6.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1132.0"
+  }
+}

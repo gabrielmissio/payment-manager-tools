@@ -1,0 +1,42 @@
+service: payment-manager-overdue-payment-handler
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  lambdaHashingVersion: 20201221
+  environment:
+    NODE_ENV: ${opt:stage, 'dev'}
+    REGION: ${opt:region, 'localhost'}
+    PAYMENT_MANAGER_TABLE_NAME: ${ssm:/payment-manager/${opt:stage, 'dev'}/dynamodb/paymanet-manager-table/name}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - 'dynamodb:*'
+          Resource:
+            - ${ssm:/payment-manager/${opt:stage, 'dev'}/dynamodb/paymanet-manager-table/arn}
+        - Effect: Allow
+          Action:
+            - 'dynamodb:*'
+          Resource:
+            - ${ssm:/payment-manager/${opt:stage, 'dev'}/dynamodb/paymanet-manager-table/arn}/index/*
+
+package:
+  patterns:
+    - '!./**'
+    - './node_modules/**'
+    - './index-app.js'
+    - './src/**'
+    - '!./src/infra/migrations'
+    - '!./src/infra/seeders'
+
+functions:
+  app:
+    handler: index-app.handler
+    timeout: 12
+    events:
+      - schedule: cron(0 12 * * MON-FRI *)
+    
