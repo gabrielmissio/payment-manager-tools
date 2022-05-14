@@ -53,7 +53,7 @@ payment-notification-routine
        └ enums                            → enums
        └ errors                           → errors
  └ index-app.js                         → Application entry point
- └ ...                              → Other files
+ └ ...                                  → Other files
  ```
 
 
