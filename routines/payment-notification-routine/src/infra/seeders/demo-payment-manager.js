@@ -32,13 +32,14 @@ const items = [
     email: 'john@main.com',
     createdBy: 'admin',
     lastUpdateBy: 'admin',
-    createdAt: '2022-05-10T20:36:59.632Z',
-    updatedAt: '2022-05-10T20:36:59.632Z',
+    createdAt: '2021-05-10T20:36:59.632Z',
+    updatedAt: '2021-05-10T20:36:59.632Z',
     status: 'ACTIVE'
   },
   {
     PK: 'CUSTOMER#001',
     SK: 'PAYMENT#2022-05-11T10:36:20.632Z',
+    status: 'VALID',
     paymentType: 'CASH',
     plan: {
       description: '2X PER WEEK',
@@ -49,13 +50,33 @@ const items = [
       updatedAt: '2022-05-10T20:36:59.632Z',
       status: 'ACTIVE'
     },
-    startDate: 'john@main.com',
-    endDate: 'john@main.com',
+    startDate: '2022-05-11',
+    endDate: '2022-06-11',
     createdBy: 'admin',
     lastUpdateBy: 'admin',
     createdAt: '2022-05-11T10:36:20.632Z',
-    updatedAt: '2022-05-11T10:36:20.632Z',
-    status: 'ACTIVE'
+    updatedAt: '2022-05-11T10:36:20.632Z'
+  },
+  {
+    PK: 'CUSTOMER#001',
+    SK: 'PAYMENT#2022-04-11T10:36:20.632Z',
+    status: 'EXHAUSTED',
+    paymentType: 'CASH',
+    plan: {
+      description: '2X PER WEEK',
+      value: 100,
+      createdBy: 'admin',
+      lastUpdateBy: 'admin',
+      createdAt: '2022-05-1T20:36:59.632Z',
+      updatedAt: '2022-05-10T20:36:59.632Z',
+      status: 'ACTIVE'
+    },
+    startDate: '2022-04-11',
+    endDate: '2022-05-11',
+    createdBy: 'admin',
+    lastUpdateBy: 'admin',
+    createdAt: '2022-04-11T10:36:20.632Z',
+    updatedAt: '2022-04-11T10:36:20.632Z'
   }
 ];
 
