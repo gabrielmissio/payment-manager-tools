@@ -3,7 +3,10 @@ const { PaymentService } = require('../../domain/services');
 
 const paymentNotificationsHandler = async () => {
   try {
-    const response = await PaymentService.paymentNotificationsHandler();
+    const paymentUpdatesResponses = await PaymentService.paymentUpdateHandler();
+    const paymentNotificationsResponses = await PaymentService.paymentNotificationsHandler();
+
+    const response = { paymentUpdatesResponses, paymentNotificationsResponses };
 
     return ResponseHelper.ok(response);
   } catch (error) {

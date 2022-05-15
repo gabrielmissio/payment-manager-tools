@@ -14,7 +14,7 @@ const params = {
       AttributeType: 'S'
     },
     {
-      AttributeName: 'endDate',
+      AttributeName: 'status',
       AttributeType: 'S'
     }
   ],
@@ -50,11 +50,15 @@ const params = {
       }
     },
     {
-      IndexName: 'endDate-index', // TODO: add index at dynamodb-table.yaml afeter validation
+      IndexName: 'status-index', // TODO: add index at dynamodb-table.yaml afeter validation
       KeySchema: [
         {
-          AttributeName: 'endDate',
+          AttributeName: 'status',
           KeyType: 'HASH'
+        },
+        {
+          AttributeName: 'SK',
+          KeyType: 'RANGE'
         }
       ],
       Projection: {

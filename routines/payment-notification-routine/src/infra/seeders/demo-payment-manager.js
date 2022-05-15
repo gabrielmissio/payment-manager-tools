@@ -59,6 +59,27 @@ const items = [
   },
   {
     PK: 'CUSTOMER#001',
+    SK: 'PAYMENT#2022-05-11T10:36:20.633Z',
+    status: 'VALID',
+    paymentType: 'CASH',
+    plan: {
+      description: 'MYSTERIOUS PLAN',
+      value: 10000,
+      createdBy: 'admin',
+      lastUpdateBy: 'admin',
+      createdAt: '2022-05-1T20:36:59.633Z',
+      updatedAt: '2022-05-10T20:36:59.633Z',
+      status: 'ACTIVE'
+    },
+    startDate: '2022-05-11',
+    endDate: '2022-05-12',
+    createdBy: 'admin',
+    lastUpdateBy: 'admin',
+    createdAt: '2022-05-11T10:36:20.633Z',
+    updatedAt: '2022-05-11T10:36:20.633Z'
+  },
+  {
+    PK: 'CUSTOMER#001',
     SK: 'PAYMENT#2022-04-11T10:36:20.632Z',
     status: 'EXHAUSTED',
     paymentType: 'CASH',

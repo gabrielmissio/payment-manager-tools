@@ -23,6 +23,31 @@ const makeDynamicUpdateParams = (payload) => {
   };
 };
 
+const makeDynamicFilterExpression = (payload) => {
+  if (!payload) throw new MissingParamError('payload');
+
+  const hasAtLeastOneKey = payload.length > 0;
+  if (!hasAtLeastOneKey) return null;
+
+  const expressionAttributeValues = {};
+  const expressionAttributeNames = {};
+  const filterExpression = [];
+
+  payload.forEach((filter) => {
+    const [sortKeyName, operation, sortKeyVal] = filter.split(' ');
+    expressionAttributeValues[`:${sortKeyName}`] = sortKeyVal;
+    expressionAttributeNames[`#${sortKeyName}`] = sortKeyName;
+    filterExpression.push(`#${sortKeyName} ${operation} :${sortKeyName}`);
+  });
+
+  return {
+    ExpressionAttributeValues: expressionAttributeValues,
+    ExpressionAttributeNames: expressionAttributeNames,
+    FilterExpression: filterExpression.join(' AND') // review
+  };
+};
+
 module.exports = {
-  makeDynamicUpdateParams
+  makeDynamicUpdateParams,
+  makeDynamicFilterExpression
 };
