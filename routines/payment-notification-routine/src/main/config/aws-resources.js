@@ -4,7 +4,7 @@ const { REGION, DYNAMODB_ENDPOINT } = require('./env');
 
 const SNS = new AWS.SNS({
   apiVersion: '2010-03-31',
-  region: REGION
+  region: 'us-east-1'
 });
 
 const DYNAMODB = new AWS.DynamoDB({

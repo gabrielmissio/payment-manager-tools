@@ -1,12 +1,13 @@
 const { ResponseHelper } = require('../helpers');
-const { PaymentService } = require('../../domain/services');
+const { CustomerService, PaymentService } = require('../../domain/services');
 
 const paymentNotificationsHandler = async () => {
   try {
     const paymentUpdatesResponses = await PaymentService.paymentUpdateHandler();
+    const customerUpdatesResponses = await CustomerService.customerUpdateHandler();
     const paymentNotificationsResponses = await PaymentService.paymentNotificationsHandler();
 
-    const response = { paymentUpdatesResponses, paymentNotificationsResponses };
+    const response = { paymentUpdatesResponses, customerUpdatesResponses, paymentNotificationsResponses };
 
     return ResponseHelper.ok(response);
   } catch (error) {

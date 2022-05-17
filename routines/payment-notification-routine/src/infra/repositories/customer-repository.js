@@ -4,6 +4,21 @@ const { MissingParamError } = require('../../utils/errors');
 const { DynamodbHelper } = require('../helpers');
 const { CustomerAdapter } = require('../adapters');
 
+const getCustomers = async (filters) => {
+  const filterSettings = DynamodbHelper.makeDynamicFilterExpression(filters);
+  const parametros = {
+    TableName: PAYMENT_MANAGER_TABLE_NAME,
+    IndexName: 'sk-index',
+    KeyConditionExpression: 'SK = :SK',
+    FilterExpression: filterSettings.FilterExpression,
+    ExpressionAttributeNames: filterSettings.ExpressionAttributeNames,
+    ExpressionAttributeValues: { ...filterSettings.ExpressionAttributeValues, ':SK': 'PROFILE' }
+  };
+
+  const data = await DYNAMODB_DOCUMENT_CLIENT.query(parametros).promise();
+  return CustomerAdapter.outputMany(data);
+};
+
 const getCustomersByStatus = async (status) => {
   if (!status) throw new MissingParamError('status');
 
@@ -37,6 +52,7 @@ const updateCustomerById = async (payload) => {
 };
 
 module.exports = {
+  getCustomers,
   getCustomersByStatus,
   updateCustomerById
 };

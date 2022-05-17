@@ -1,5 +1,5 @@
-const { sendNotification } = require('./customer-service');
-const { CustomerRepository, PaymentRepository } = require('../../infra/repositories');
+const { sendNotification, getCustomers } = require('./customer-service');
+const { PaymentRepository } = require('../../infra/repositories');
 const { DataHelper } = require('../../utils/helpers');
 const { MissingParamError } = require('../../utils/errors');
 const {
@@ -9,16 +9,24 @@ const {
 } = require('../../utils/enums');
 
 const getCustomersToNotify = async () => {
-  const data = [
-    CustomerRepository.getCustomersByStatus(LATE_PAYMENT),
-    CustomerRepository.getCustomersByStatus(DEFAULTER)
-  ];
+  const statusFilter = [`status == ${LATE_PAYMENT}`, '||', `status == ${DEFAULTER}`];
+  const data = await getCustomers(statusFilter);
 
-  const [customersWithLatePayment, defaulterCustomers] = await Promise.all(data);
+  const customersWithLatePayment = [];
+  const defaulterCustomers = [];
+
+  const customerLists = {
+    LATE_PAYMENT: (customer) => customersWithLatePayment.push(customer),
+    DEFAULTER: (customer) => defaulterCustomers.push(customer)
+  };
+
+  data.map((customer) => customerLists[customer.status] && customerLists[customer.status](customer));
   return { customersWithLatePayment, defaulterCustomers };
 };
 
 const paymentNotificationsHandler = async () => {
+  // find a better name
+
   const { customersWithLatePayment, defaulterCustomers } = await getCustomersToNotify();
   const messagesSent = await Promise.allSettled(
     customersWithLatePayment.map((customer) => sendNotification(customer, LATE_PAYMENT_NOTIFICATION)),
@@ -40,6 +48,8 @@ const updatePayment = async ({ requestUser, ...payload }) => {
 };
 
 const paymentUpdateHandler = async () => {
+  // find a better name
+
   const dateFilter = [`endDate <= ${DataHelper.getCurrentYearMonthDay()}`];
   const exhaustedPayments = await PaymentRepository.getPaymentsByStatus(VALID, dateFilter);
 
@@ -55,7 +65,15 @@ const paymentUpdateHandler = async () => {
   return updatesResponses;
 };
 
+const getPaymentsByCustomerId = async (customerId, filters) => {
+  const payments = await PaymentRepository.getPaymentsByCustomerId(customerId, filters);
+
+  // TODO: implement pagination
+  return payments;
+};
+
 module.exports = {
   paymentNotificationsHandler,
-  paymentUpdateHandler
+  paymentUpdateHandler,
+  getPaymentsByCustomerId
 };

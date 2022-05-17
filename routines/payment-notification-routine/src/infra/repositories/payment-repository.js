@@ -23,15 +23,17 @@ const getPaymentsByStatus = async (status, filters) => {
   return PaymentAdapter.outputMany(data);
 };
 
-const getPaymentsByCustomerId = async (payload) => {
+const getPaymentsByCustomerId = async (payload, filters) => {
   if (!payload) throw new MissingParamError('payload');
   const { PK } = PaymentAdapter.inputOne(payload);
 
+  const filterSettings = DynamodbHelper.makeDynamicFilterExpression(filters);
   const parametros = {
     TableName: PAYMENT_MANAGER_TABLE_NAME,
     KeyConditionExpression: 'PK = :PK AND begins_with(SK, :payment)',
-    ExpressionAttributeValues: { ':PK': PK, ':payment': 'PAYMENT#' }
-    // TODO: make dynamodb filter expression
+    FilterExpression: filterSettings.FilterExpression,
+    ExpressionAttributeNames: filterSettings.ExpressionAttributeNames,
+    ExpressionAttributeValues: { ...filterSettings.ExpressionAttributeValues, ':PK': PK, ':payment': 'PAYMENT#' }
   };
 
   const data = await DYNAMODB_DOCUMENT_CLIENT.query(parametros).promise();

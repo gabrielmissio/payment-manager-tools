@@ -42,6 +42,7 @@ const items = [
     status: 'VALID',
     paymentType: 'CASH',
     plan: {
+      planId: '001',
       description: '2X PER WEEK',
       value: 100,
       createdBy: 'admin',
@@ -63,6 +64,7 @@ const items = [
     status: 'VALID',
     paymentType: 'CASH',
     plan: {
+      planId: '001',
       description: 'MYSTERIOUS PLAN',
       value: 10000,
       createdBy: 'admin',
@@ -84,6 +86,7 @@ const items = [
     status: 'EXHAUSTED',
     paymentType: 'CASH',
     plan: {
+      planId: '001',
       description: '2X PER WEEK',
       value: 100,
       createdBy: 'admin',
