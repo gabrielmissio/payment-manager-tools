@@ -1,6 +1,7 @@
 const { DataHelper } = require('../../utils/helpers');
 const { MissingParamError } = require('../../utils/errors');
-const { BroadcastRepository, CustomerRepository, PaymentRepository } = require('../../infra/repositories');
+const { CustomerEntity } = require('../entities');
+const { BroadcastRepository, CustomerRepository } = require('../../infra/repositories');
 const {
   CustomerStatusEnum: { ACTIVE, LATE_PAYMENT, DEFAULTER, DEFAULTER_NOTIFIED, INACTIVE, LATE_PAYMENT_NOTIFIED },
   NotificationMessageEnum: {
@@ -10,26 +11,12 @@ const {
     DEFAULTER_NOTIFICATION,
     LATE_PAYMENT_NOTIFICATION
   },
-  PaymentStatusEnum: { VALID },
   RulesEnum: { LATE_PAYMENT_LIMIT_IN_DAYS, DEFAULTER_LIMIT_IN_DAYS, DEACTIVATION_LIMIT_IN_DAYS }
 } = require('../../utils/enums');
 
 const notificationOptions = {
   [LATE_PAYMENT_NOTIFICATION]: `${DOMAIN_NAME}\n\n${LATE_PAYMENT_ALERT}`,
   [DEFAULTER_NOTIFICATION]: `${DOMAIN_NAME}\n\n${DEFAULTER_ALERT}`
-};
-
-const getNextStatus = (currentStatus) => {
-  const statusRule = {
-    [ACTIVE]: LATE_PAYMENT,
-    [LATE_PAYMENT]: LATE_PAYMENT_NOTIFIED,
-    [LATE_PAYMENT_NOTIFIED]: DEFAULTER,
-    [DEFAULTER]: DEFAULTER_NOTIFIED,
-    [DEFAULTER_NOTIFIED]: INACTIVE,
-    [INACTIVE]: INACTIVE
-  };
-
-  return statusRule[currentStatus];
 };
 
 const updateCustomer = async ({ requestUser, cpf, ...payload }) => {
@@ -50,7 +37,7 @@ const getCustomers = async (filters) => {
 
 const sendNotification = async (customer, notification) => {
   const { status: currentStatus, customerId } = customer;
-  const nextStatus = getNextStatus(currentStatus);
+  const nextStatus = CustomerEntity.getNextStatus(currentStatus);
 
   const response = await Promise.all([
     BroadcastRepository.sendSMS({ recipient: customer, message: notificationOptions[notification] }),
@@ -59,117 +46,73 @@ const sendNotification = async (customer, notification) => {
   return response;
 };
 
-const getPaymentsByCustomerId = async (customerId, filters) => {
-  const payments = await PaymentRepository.getPaymentsByCustomerId({ customerId }, filters);
+const tryToActivateTheCustomer = async (customer) => {
+  const customerHasValidPayments = await CustomerEntity.hasValidPayments(customer);
+  if (!customerHasValidPayments) return {};
 
-  // TODO: implement pagination
-  return payments;
+  const updatedCustomer = await updateCustomer({
+    requestUser: { username: 'payment-notification-routine' },
+    customerId: customer.customerId,
+    status: ACTIVE
+  });
+
+  return { updatedCustomer };
+};
+
+const getEndDate = async (timeInDays) => {
+  // TODO: rename function
+  const expirationDate = new Date(DataHelper.getCurrentYearMonthDay());
+  expirationDate.setDate(expirationDate.getDate() + timeInDays);
+  return DataHelper.getDateToISOString(expirationDate);
+};
+
+const updateCustomerToTheNextStatus = async (customer) => {
+  const nextStatus = CustomerEntity.getNextStatus(customer.status);
+  const updatedCustomer = await updateCustomer({
+    requestUser: { username: 'payment-notification-routine' },
+    customerId: customer.customerId,
+    status: nextStatus
+  });
+
+  return updatedCustomer;
 };
 
 const apllyCustomerUpdateRules = async (customer) => {
   const option = {
     [ACTIVE]: async () => {
-      const { customerId } = customer;
+      const endDate = getEndDate(LATE_PAYMENT_LIMIT_IN_DAYS);
+      const customerHasExpiredPayments = await CustomerEntity.hasExpiredPayments(customer, endDate);
+      if (!customerHasExpiredPayments) return {};
 
-      const statusEqualToValidFilter = [`status == ${VALID}`];
-      const validPayments = await getPaymentsByCustomerId(customerId, statusEqualToValidFilter);
-      if (validPayments.length > 0) return {};
-
-      const expirationDate = new Date(DataHelper.getCurrentYearMonthDay());
-      expirationDate.setDate(expirationDate.getDate() + LATE_PAYMENT_LIMIT_IN_DAYS);
-      const filterDate = DataHelper.getDateToISOString(expirationDate);
-
-      const expiredPaymentFilter = [`status != ${VALID}`, '&&', `endDate <= ${filterDate}`];
-      const expiredPayments = await getPaymentsByCustomerId(customerId, expiredPaymentFilter);
-      if (expiredPayments.length > 0) return {};
-
-      const nextStatus = getNextStatus(customer.status);
-      const updatedCustomer = await updateCustomer({
-        requestUser: { username: 'payment-notification-routine' },
-        customerId,
-        status: nextStatus
-      });
-
+      const updatedCustomer = await updateCustomerToTheNextStatus(customer);
       return { updatedCustomer };
     },
 
-    [LATE_PAYMENT]: async () => {
-      const { customerId } = customer;
-
-      const statusEqualToValidFilter = [`status == ${VALID}`];
-      const validPayments = await getPaymentsByCustomerId(customerId, statusEqualToValidFilter);
-      if (validPayments.length < 1) return {};
-
-      const updatedCustomer = await updateCustomer({
-        requestUser: { username: 'payment-notification-routine' },
-        customerId,
-        status: ACTIVE
-      });
-
-      return { updatedCustomer };
-    },
+    [LATE_PAYMENT]: tryToActivateTheCustomer(customer),
 
     [LATE_PAYMENT_NOTIFIED]: async () => {
-      const { customerId } = customer;
+      let { updatedCustomer } = await tryToActivateTheCustomer(customer);
+      if (updatedCustomer) return { updatedCustomer };
 
-      const statusEqualToValidFilter = [`status == ${VALID}`];
-      const validPayments = await getPaymentsByCustomerId(customerId, statusEqualToValidFilter);
-      if (validPayments.length > 0) return {};
+      const endDate = getEndDate(DEFAULTER_LIMIT_IN_DAYS);
+      const customerHasExpiredPayments = await CustomerEntity.hasExpiredPayments(customer, endDate);
+      if (customerHasExpiredPayments) return {};
 
-      const expirationDate = new Date(DataHelper.getCurrentYearMonthDay());
-      expirationDate.setDate(expirationDate.getDate() + DEFAULTER_LIMIT_IN_DAYS);
-      const filterDate = DataHelper.getDateToISOString(expirationDate);
-
-      const expiredPaymentFilter = [`status != ${VALID}`, '&&', `endDate <= ${filterDate}`];
-      const expiredPayments = await getPaymentsByCustomerId(customerId, expiredPaymentFilter);
-      if (expiredPayments.length > 0) return {};
-
-      const updatedCustomer = await updateCustomer({
-        requestUser: { username: 'payment-notification-routine' },
-        customerId,
-        status: DEFAULTER
-      });
-
+      updatedCustomer = await updateCustomerToTheNextStatus(customer);
       return { updatedCustomer };
     },
 
-    [DEFAULTER]: async () => {
-      const { customerId } = customer;
-
-      const statusEqualToValidFilter = [`status == ${VALID}`];
-      const validPayments = await getPaymentsByCustomerId(customerId, statusEqualToValidFilter);
-      if (validPayments.length < 1) return {};
-
-      const updatedCustomer = await updateCustomer({
-        requestUser: { username: 'payment-notification-routine' },
-        customerId,
-        status: ACTIVE
-      });
-
-      return { updatedCustomer };
-    },
+    [DEFAULTER]: tryToActivateTheCustomer(customer),
 
     [DEFAULTER_NOTIFIED]: async () => {
-      const { customerId } = customer;
+      let { updatedCustomer } = await tryToActivateTheCustomer(customer);
+      if (updatedCustomer) return { updatedCustomer };
 
-      const statusEqualToValidFilter = [`status == ${VALID}`];
-      const validPayments = await getPaymentsByCustomerId(customerId, statusEqualToValidFilter);
-      if (validPayments.length > 0) return {};
+      const endDate = getEndDate(DEACTIVATION_LIMIT_IN_DAYS);
+      const customerHasExpiredPayments = await CustomerEntity.hasExpiredPayments(customer, endDate);
+      if (customerHasExpiredPayments) return {};
 
-      const expirationDate = new Date(DataHelper.getCurrentYearMonthDay());
-      expirationDate.setDate(expirationDate.getDate() + DEACTIVATION_LIMIT_IN_DAYS);
-      const filterDate = DataHelper.getDateToISOString(expirationDate);
-
-      const expiredPaymentFilter = [`status != ${VALID}`, '&&', `endDate <= ${filterDate}`];
-      const expiredPayments = await getPaymentsByCustomerId(customerId, expiredPaymentFilter);
-      if (expiredPayments.length > 0) return {};
-
-      const updatedCustomer = await updateCustomer({
-        requestUser: { username: 'payment-notification-routine' },
-        customerId,
-        status: INACTIVE
-      });
-
+      updatedCustomer = await updateCustomerToTheNextStatus(customer);
       return { updatedCustomer };
     }
   };
